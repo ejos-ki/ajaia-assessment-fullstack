@@ -54,6 +54,14 @@ workflow note at the end. Not meant to be polished, just honest.
   brown accents, serif type) instead of default Tailwind gray —
   product-judgment call to make the editor feel intentional rather
   than templated.
+- Sharing verified end-to-end: Alice shares doc with Bob, Bob sees it
+  on his dashboard with edit access but no delete/share controls
+  (owner-only actions correctly gated both in UI and API).
+- File upload implemented as .txt/.md → new document, reusing the same
+  `content` field as any other doc (no separate file storage needed).
+  Escapes HTML from the uploaded file before wrapping it in `<p>` tags,
+  to prevent a malicious file from injecting markup into the editor
+  (basic stored-XSS guard).
 
 ## What I'd do next with more time
 
@@ -62,9 +70,11 @@ what's next" section in the submission)*
 
 ## Known limitations
 
-*(running list — add as they come up, don't wait until the end)*
-
-
-- Sharing verified end-to-end: Alice shares doc with Bob, Bob sees it on
-  his dashboard with edit access but no delete/share controls (owner-only
-  actions correctly gated both in UI and API).
+- No rate limiting on the login endpoint (see scope cuts above).
+- Sharing is single-collaborator, editor-only access — no view-only
+  role, no dedicated "revoke" action beyond toggling the same user off.
+- No real-time collaboration — if two users edit simultaneously, last
+  save wins. Not attempted; out of scope given assessment time.
+- File upload limited to .txt/.md, 1MB max. Uploaded content becomes
+  plain paragraphs — no formatting is preserved from the source file,
+  since .txt/.md don't carry rich formatting to begin with.
