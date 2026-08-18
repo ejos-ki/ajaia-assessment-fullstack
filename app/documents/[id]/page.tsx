@@ -46,6 +46,8 @@ export default async function DocumentPage({
   // Fine at this scale — would paginate/search in a real multi-tenant product.
   const allUsers = await User.find({ _id: { $ne: session.userId } }).select("name email");
 
+  const currentUser = await User.findById(session.userId).select("name");
+
   return (
     <EditorClient
       documentId={documentId}
@@ -58,6 +60,7 @@ export default async function DocumentPage({
         name: user.name,
         email: user.email,
       }))}
+      currentUserName={currentUser?.name ?? "Someone"}
     />
   );
 }

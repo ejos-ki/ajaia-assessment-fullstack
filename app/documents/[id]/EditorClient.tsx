@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import ShareDialog from "@/components/dashboard/ShareDialog";
+import { usePresence } from "@/hooks/usePresence";
+import PresenceAvatars from "@/components/editor/PresenceAvatars";
 
 interface AvailableUser {
   id: string;
@@ -34,6 +36,7 @@ interface EditorClientProps {
   isOwner: boolean;
   sharedWithIds: string[];
   availableUsers: AvailableUser[];
+  currentUserName: string;
 }
 
 const AUTO_SAVE_DELAY_MS = 1000;
@@ -45,6 +48,7 @@ export default function EditorClient({
   isOwner,
   sharedWithIds,
   availableUsers,
+  currentUserName,
 }: EditorClientProps) {
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
@@ -52,6 +56,8 @@ export default function EditorClient({
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const viewers = usePresence(documentId, currentUserName);
 
   const editor = useEditor({
     extensions: [StarterKit, Underline],
@@ -122,6 +128,7 @@ export default function EditorClient({
         </div>
 
         <div className="flex items-center gap-3">
+          <PresenceAvatars viewers={viewers} currentUserName={currentUserName} />
           <span className="text-xs text-gray-400 flex items-center gap-1.5">
             {saveStatus === "saving" && "Saving..."}
             {saveStatus === "saved" && (
