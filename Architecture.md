@@ -47,18 +47,26 @@ several relational tables.
 - **Granular sharing roles (view vs. edit)** — one sharing tier (edit
   access), since the brief asks for sharing that "demonstrates clear
   intent and working logic," not enterprise ACL.
-- **Real-time collaborative editing** — out of scope for the time
-  available; last save wins if two users edit simultaneously. A real
-  implementation would need operational transforms or CRDTs (e.g. Yjs),
-  which is a multi-day undertaking on its own.
-- **Rate limiting / brute-force protection on login** — a hardening
-  concern, not a functional one; flagged explicitly rather than skipped
-  silently.
+- **Real-time collaborative editing (merge/conflict resolution)** — last
+  save wins if two users edit simultaneously. A real implementation
+  would need operational transforms or CRDTs (e.g. Yjs), a multi-day
+  undertaking on its own.
+
+## Optional stretch feature implemented
+
+Built the "real-time collaboration indicators" stretch goal from the
+brief: a lightweight polling-based presence system (`models/Presence.ts`,
+a heartbeat API route, `usePresence` hook) shows an avatar stack of
+everyone currently viewing a document, refreshing every ~5 seconds.
+Chose polling over WebSockets deliberately — sufficient to demonstrate
+real presence awareness without the added infrastructure of a
+persistent socket connection, which doesn't fit cleanly into Vercel's
+serverless model anyway.
 
 ## What I'd do next with more time (2–4 hours)
 
-1. Add rate limiting to the login endpoint (simple in-memory or
-   Redis-backed limiter).
+1. Move rate limiting to a shared store (Redis/Upstash) so limits hold
+   across all Vercel serverless instances, not just one warm instance.
 2. Add a view-only sharing tier, distinct from edit access.
 3. Add optimistic UI feedback for the share panel (currently a full
    round-trip per toggle).

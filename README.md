@@ -101,12 +101,23 @@ npm run test
 
 See `notes.md` / the architecture note for the full list. Highlights:
 
-- No rate limiting on the login endpoint.
 - Sharing is single-tier (editor access only, no view-only role).
-- No real-time collaboration — last save wins if two users edit at once.
+- No real-time collaborative editing — last save wins if two users edit
+  simultaneously. Presence indicators (who's currently viewing) are
+  implemented via polling, but concurrent edits aren't merged.
+- Rate limiting on login is in-memory only, not shared across Vercel's
+  serverless instances — sufficient to demonstrate the mechanism and
+  deter casual brute-force, not production-grade.
 - MongoDB Atlas network access is set to allow all IPs, since Vercel's
   serverless functions don't have a static IP on the free tier. Access
   still requires valid database credentials.
+
+## Stretch feature: presence indicators
+
+Implemented the optional "real-time collaboration indicators" stretch
+goal: a small avatar stack appears in the editor header showing who
+else currently has the document open, updating every ~5 seconds via
+polling (not WebSockets — simpler to build and deploy within scope).
 
 ## What I'd build next with more time
 
