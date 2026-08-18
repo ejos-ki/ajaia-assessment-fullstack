@@ -1,14 +1,30 @@
 // Login endpoint. Verifies credentials against seeded users and issues
-// a session cookie on success. No rate limiting implemented — noted as
-// a known limitation in README given assessment scope.
+// a session cookie on success. Rate limited by IP (see lib/rateLimit.ts)
+// to slow down brute-force attempts.
 
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { verifyPassword, setSessionCookie } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit by IP address. Vercel sets x-forwarded-for; fall back
+    // to a constant key if it's ever missing (e.g. local dev) so the
+    // limiter doesn't throw on an undefined key.
+    const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const rateLimitResult = checkRateLimit(`login:${ipAddress}`);
+
+    if (!rateLimitResult.isAllowed) {
+      return NextResponse.json(
+        {
+          error: `Too many login attempts. Try again in ${rateLimitResult.retryAfterFormatted}.`,
+        },
+        { status: 429 }
+      );
+    }
+
     const { email, password } = await req.json();
 
     if (!email || !password) {
