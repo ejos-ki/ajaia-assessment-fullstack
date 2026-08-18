@@ -1,8 +1,8 @@
 # Submission — Ajaia AI-Native Full Stack Developer Assessment
 
 **Candidate:** Jeo D. Latorre
-**Live product URL:** https://ajaia-assessment-fullstack.vercel.app
-**Repository:** https://github.com/ejos-ki/ajaia-assessment-fullstack
+**Live product URL:** [add Vercel URL]
+**Repository:** [add GitHub URL]
 **Walkthrough video:** [add unlisted YouTube/Loom URL]
 
 ---

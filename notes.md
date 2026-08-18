@@ -62,6 +62,16 @@ workflow note at the end. Not meant to be polished, just honest.
   Escapes HTML from the uploaded file before wrapping it in `<p>` tags,
   to prevent a malicious file from injecting markup into the editor
   (basic stored-XSS guard).
+- Fixed a real bug in editor styling: Tailwind's preflight reset strips
+  default list markers, so bullet/numbered lists from TipTap weren't
+  rendering visually despite correct HTML. Added scoped CSS rules for
+  `.ProseMirror ul/ol/li/h2/p` instead of pulling in the full
+  `@tailwindcss/typography` plugin — smaller footprint for this scope.
+- Extracted document authorization logic into a pure function
+  (`lib/documentAccess.ts`) so it's unit-testable without a database or
+  HTTP server. API route now calls this same function rather than
+  duplicating the logic — single source of truth. 4 tests covering
+  owner/shared/stranger access and delete permission, all passing.
 
 ## What I'd do next with more time
 
@@ -78,3 +88,8 @@ what's next" section in the submission)*
 - File upload limited to .txt/.md, 1MB max. Uploaded content becomes
   plain paragraphs — no formatting is preserved from the source file,
   since .txt/.md don't carry rich formatting to begin with.
+- MongoDB Atlas Network Access is set to allow all IPs (0.0.0.0/0),
+  since Vercel serverless functions don't have a static IP on the free
+  tier. Access still requires valid database credentials (not stored in
+  code or committed to the repo). In a production system this would use
+  a VPC peering connection or a proxy with a fixed egress IP instead.
