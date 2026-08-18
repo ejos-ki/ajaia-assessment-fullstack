@@ -56,7 +56,7 @@ export default function DashboardHeader({ userName, userEmail, onLogout }: Dashb
             onClick={() => setIsMenuOpen((open) => !open)}
             className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
           >
-            <div className="w-7 h-7 w-7 h-7 rounded-full bg-teal-700 flex items-center justify-center text-[11px] font-medium text-white">
+            <div className="w-7 h-7 rounded-full bg-teal-700 flex items-center justify-center text-[11px] font-medium text-white">
               {getInitials(userName)}
             </div>
             <span className="text-sm text-gray-700">{userName}</span>

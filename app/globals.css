@@ -53,6 +53,10 @@ body {
   margin: 0.5rem 0;
 }
 
+.ProseMirror {
+  caret-color: #0d9488;
+}
+
 /* Custom scrollbar — teal-tinted instead of default gray/black.
    Webkit browsers (Chrome, Edge, Safari) use ::-webkit-scrollbar;
    Firefox uses the scrollbar-color/scrollbar-width properties. */
