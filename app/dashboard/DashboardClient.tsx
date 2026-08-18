@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface DocumentSummary {
   _id: string;
@@ -132,6 +133,7 @@ export default function DashboardClient({
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
+    toast.success("Signed out");
     router.push("/login");
     router.refresh();
   }

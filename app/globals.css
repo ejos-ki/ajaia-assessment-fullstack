@@ -52,3 +52,41 @@ body {
 .ProseMirror p {
   margin: 0.5rem 0;
 }
+
+/* Custom scrollbar — teal-tinted instead of default gray/black.
+   Webkit browsers (Chrome, Edge, Safari) use ::-webkit-scrollbar;
+   Firefox uses the scrollbar-color/scrollbar-width properties. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f4;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #99c5bf;
+  border-radius: 8px;
+  border: 2px solid #f1f5f4;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0d9488;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #99c5bf #f1f5f4;
+}
+
+/* Text selection highlight — teal instead of default blue */
+::selection {
+  background-color: #0d9488;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: #0d9488;
+  color: #ffffff;
+}
