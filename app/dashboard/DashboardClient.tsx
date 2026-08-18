@@ -1,237 +1,184 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useState } from "react";
+import { Upload, Plus, FileText } from "lucide-react";
+import { useDashboard } from "@/hooks/useDashboard";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DocumentTable from "@/components/dashboard/DocumentTable";
+import RecentDocumentCard from "@/components/dashboard/RecentDocumentCard";
+import ShareDialog from "@/components/dashboard/ShareDialog";
+import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
 
-interface DocumentSummary {
-  _id: string;
-  title: string;
-  updatedAt: string;
-  owner: { _id: string; name: string; email: string };
-  sharedWith: string[];
+interface AvailableUser {
+  id: string;
+  name: string;
+  email: string;
 }
 
 interface DashboardClientProps {
   currentUserName: string;
   currentUserEmail: string;
+  availableUsers: AvailableUser[];
 }
 
 export default function DashboardClient({
   currentUserName,
   currentUserEmail,
+  availableUsers,
 }: DashboardClientProps) {
-  const router = useRouter();
-  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
+  const {
+    documents,
+    recentDocuments,
+    isLoading,
+    isCreating,
+    isUploading,
+    fileInputRef,
+    createDocument,
+    uploadFile,
+    deleteDocument,
+    logout,
+    goToDocument,
+    refreshDocuments,
+  } = useDashboard(currentUserEmail);
 
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [shareTargetId, setShareTargetId] = useState<string | null>(null);
+  const shareTarget = documents.find((doc) => doc._id === shareTargetId);
 
-  useEffect(() => {
-    loadDocuments();
-  }, []);
-
-  async function loadDocuments() {
-    setIsLoading(true);
-    setErrorMessage("");
-    try {
-      const response = await fetch("/api/documents");
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrorMessage(data.error || "Failed to load documents");
-        return;
-      }
-
-      setDocuments(data.documents);
-    } catch {
-      setErrorMessage("Network error while loading documents");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function handleCreateDocument() {
-    setIsCreating(true);
-    setErrorMessage("");
-    try {
-      const response = await fetch("/api/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Untitled Document" }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrorMessage(data.error || "Failed to create document");
-        return;
-      }
-
-      router.push(`/documents/${data.document._id}`);
-    } catch {
-      setErrorMessage("Network error while creating document");
-    } finally {
-      setIsCreating(false);
-    }
-  }
-
-  async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
-    const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
-
-    setIsUploading(true);
-    setErrorMessage("");
-
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      const response = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrorMessage(data.error || "Failed to upload file");
-        return;
-      }
-
-      router.push(`/documents/${data.document._id}`);
-    } catch {
-      setErrorMessage("Network error while uploading file");
-    } finally {
-      setIsUploading(false);
-      // Reset so selecting the same file again still triggers onChange.
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
-
-  async function handleDeleteDocument(documentId: string) {
-    const confirmed = window.confirm("Delete this document? This cannot be undone.");
-    if (!confirmed) return;
-
-    try {
-      const response = await fetch(`/api/documents/${documentId}`, {
-        method: "DELETE",
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrorMessage(data.error || "Failed to delete document");
-        return;
-      }
-
-      setDocuments((previous) => previous.filter((doc) => doc._id !== documentId));
-    } catch {
-      setErrorMessage("Network error while deleting document");
-    }
-  }
-
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    toast.success("Signed out");
-    router.push("/login");
-    router.refresh();
-  }
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const deleteTarget = documents.find((doc) => doc._id === deleteTargetId);
 
   return (
-    <div className="min-h-screen bg-[#f4ecd8]">
-      <header className="border-b border-[#d9c9a3] bg-[#fffdf7] px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-serif font-semibold text-[#3d2b1f]">
-            Ajaia Docs
-          </h1>
-          <p className="text-sm text-[#7a6a53] font-serif">
-            Signed in as {currentUserName} ({currentUserEmail})
-          </p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="text-sm text-[#5c4326] border border-[#d9c9a3] rounded-sm px-4 py-2 hover:bg-[#f4ecd8] font-serif transition-colors"
-        >
-          Sign out
-        </button>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      <DashboardHeader
+        userName={currentUserName}
+        userEmail={currentUserEmail}
+        onLogout={logout}
+      />
 
-      <main className="max-w-3xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-serif text-[#3d2b1f]">Your Documents</h2>
-          
+      <main className="px-15 py-8">
+        <div className="flex items-center justify-between mb-7">
+          <div>
+            <h1 className="text-xl font-medium text-gray-900">Your documents</h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {documents.length} document{documents.length === 1 ? "" : "s"} · Welcome back,{" "}
+              {currentUserName.split(" ")[0]}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="border border-[#d9c9a3] text-[#5c4326] rounded-sm px-4 py-2 text-sm font-medium hover:bg-[#f4ecd8] disabled:opacity-50 font-serif transition-colors"
+              className="flex items-center gap-1.5 border border-gray-200 text-gray-700 rounded-lg px-3.5 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
             >
-              {isUploading ? "Uploading..." : "Upload File"}
+              <Upload size={15} />
+              {isUploading ? "Uploading..." : "Upload"}
             </button>
             <input
               ref={fileInputRef}
               type="file"
               accept=".txt,.md"
-              onChange={handleFileSelected}
+              onChange={uploadFile}
               className="hidden"
             />
             <button
-              onClick={handleCreateDocument}
+              onClick={createDocument}
               disabled={isCreating}
-              className="bg-[#5c4326] text-[#fffdf7] rounded-sm px-4 py-2 text-sm font-medium hover:bg-[#4a3620] disabled:opacity-50 font-serif transition-colors"
+              className="flex items-center gap-1.5 bg-teal-700 text-white rounded-lg px-3.5 py-2 text-sm font-medium hover:bg-teal-800 disabled:opacity-50 transition-colors"
             >
-              {isCreating ? "Creating..." : "+ New Document"}
+              <Plus size={15} />
+              {isCreating ? "Creating..." : "New document"}
             </button>
           </div>
         </div>
 
-        {errorMessage && (
-          <p className="text-sm text-[#8b3a2f] bg-[#fbe9e4] border border-[#e3b8ac] rounded-sm px-3 py-2 mb-4 font-serif">
-            {errorMessage}
-          </p>
-        )}
-
         {isLoading ? (
-          <p className="text-[#7a6a53] font-serif text-sm">Loading documents...</p>
+          <p className="text-sm text-gray-500">Loading documents...</p>
         ) : documents.length === 0 ? (
-          <p className="text-[#7a6a53] font-serif text-sm italic">
-            No documents yet. Create your first one above.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {documents.map((document) => (
-              <li
-                key={document._id}
-                className="bg-[#fffdf7] border border-[#d9c9a3] rounded-sm px-4 py-3 flex items-center justify-between hover:shadow-sm transition-shadow"
+          <div className="text-center py-16 px-6 bg-white border border-gray-200 rounded-xl">
+            <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center mx-auto mb-4">
+              <FileText size={26} className="text-teal-700" />
+            </div>
+            <p className="text-base font-medium text-gray-900 mb-1.5">
+              Start your first document
+            </p>
+            <p className="text-sm text-gray-500 mb-5 max-w-xs mx-auto">
+              Create a new document or upload a .txt or .md file to get started.
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="flex items-center gap-1.5 border border-gray-200 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >
-                <button
-                  onClick={() => router.push(`/documents/${document._id}`)}
-                  className="text-left flex-1"
-                >
-                  <p className="font-serif text-[#3d2b1f] font-medium">
-                    {document.title}
-                  </p>
-                  <p className="text-xs text-[#9c8a6c] font-serif">
-                    Owner: {document.owner.name} · Updated{" "}
-                    {new Date(document.updatedAt).toLocaleString()}
-                    {document.sharedWith.length > 0 &&
-                      ` · Shared with ${document.sharedWith.length} user(s)`}
-                  </p>
-                </button>
-                {document.owner.email === currentUserEmail && (
-                  <button
-                    onClick={() => handleDeleteDocument(document._id)}
-                    className="text-xs text-[#8b3a2f] hover:underline font-serif ml-4"
-                  >
-                    Delete
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
+                <Upload size={15} />
+                {isUploading ? "Uploading..." : "Upload file"}
+              </button>
+              <button
+                onClick={createDocument}
+                disabled={isCreating}
+                className="flex items-center gap-1.5 bg-teal-700 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-teal-800 disabled:opacity-50 transition-colors"
+              >
+                <Plus size={15} />
+                {isCreating ? "Creating..." : "New document"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {recentDocuments.length > 0 && (
+              <>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+                  Recent
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-8">
+                  {recentDocuments.map((doc) => (
+                    <RecentDocumentCard
+                      key={doc._id}
+                      document={doc}
+                      onOpen={() => goToDocument(doc._id)}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+              All documents
+            </p>
+            <DocumentTable
+              documents={documents}
+              currentUserEmail={currentUserEmail}
+              onOpen={goToDocument}
+              onShare={setShareTargetId}
+              onDelete={setDeleteTargetId}
+            />
+          </>
         )}
       </main>
+
+      {shareTarget && (
+        <ShareDialog
+          documentId={shareTarget._id}
+          documentTitle={shareTarget.title}
+          availableUsers={availableUsers}
+          initialSharedIds={shareTarget.sharedWith}
+          onClose={() => setShareTargetId(null)}
+          onShared={refreshDocuments}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete document"
+          message={`"${deleteTarget.title}" will be permanently deleted. This cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={async () => {
+            await deleteDocument(deleteTarget._id);
+            setDeleteTargetId(null);
+          }}
+          onCancel={() => setDeleteTargetId(null)}
+        />
+      )}
     </div>
   );
 }
