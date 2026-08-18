@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface DocumentSummary {
@@ -25,6 +25,9 @@ export default function DashboardClient({
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadDocuments();
@@ -71,6 +74,38 @@ export default function DashboardClient({
       setErrorMessage("Network error while creating document");
     } finally {
       setIsCreating(false);
+    }
+  }
+
+  async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) return;
+
+    setIsUploading(true);
+    setErrorMessage("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch("/api/documents/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.error || "Failed to upload file");
+        return;
+      }
+
+      router.push(`/documents/${data.document._id}`);
+    } catch {
+      setErrorMessage("Network error while uploading file");
+    } finally {
+      setIsUploading(false);
+      // Reset so selecting the same file again still triggers onChange.
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -123,13 +158,30 @@ export default function DashboardClient({
       <main className="max-w-3xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-serif text-[#3d2b1f]">Your Documents</h2>
-          <button
-            onClick={handleCreateDocument}
-            disabled={isCreating}
-            className="bg-[#5c4326] text-[#fffdf7] rounded-sm px-4 py-2 text-sm font-medium hover:bg-[#4a3620] disabled:opacity-50 font-serif transition-colors"
-          >
-            {isCreating ? "Creating..." : "+ New Document"}
-          </button>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="border border-[#d9c9a3] text-[#5c4326] rounded-sm px-4 py-2 text-sm font-medium hover:bg-[#f4ecd8] disabled:opacity-50 font-serif transition-colors"
+            >
+              {isUploading ? "Uploading..." : "Upload File"}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.md"
+              onChange={handleFileSelected}
+              className="hidden"
+            />
+            <button
+              onClick={handleCreateDocument}
+              disabled={isCreating}
+              className="bg-[#5c4326] text-[#fffdf7] rounded-sm px-4 py-2 text-sm font-medium hover:bg-[#4a3620] disabled:opacity-50 font-serif transition-colors"
+            >
+              {isCreating ? "Creating..." : "+ New Document"}
+            </button>
+          </div>
         </div>
 
         {errorMessage && (

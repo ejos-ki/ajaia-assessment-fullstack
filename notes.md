@@ -63,3 +63,8 @@ what's next" section in the submission)*
 ## Known limitations
 
 *(running list — add as they come up, don't wait until the end)*
+
+
+- Sharing verified end-to-end: Alice shares doc with Bob, Bob sees it on
+  his dashboard with edit access but no delete/share controls (owner-only
+  actions correctly gated both in UI and API).
