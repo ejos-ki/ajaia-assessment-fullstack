@@ -54,14 +54,12 @@ several relational tables.
 
 ## Optional stretch feature implemented
 
-Built the "real-time collaboration indicators" stretch goal from the
-brief: a lightweight polling-based presence system (`models/Presence.ts`,
-a heartbeat API route, `usePresence` hook) shows an avatar stack of
-everyone currently viewing a document, refreshing every ~5 seconds.
-Chose polling over WebSockets deliberately — sufficient to demonstrate
-real presence awareness without the added infrastructure of a
-persistent socket connection, which doesn't fit cleanly into Vercel's
-serverless model anyway.
+Began implementing the "real-time collaboration indicators" stretch
+goal (presence model, heartbeat API route, avatar stack UI) but the
+API route was not correctly created before the time limit, so it isn't
+functional in the deployed build. Documenting this honestly rather
+than claiming a feature that doesn't work, per the assessment's
+guidance to state clearly what's working vs. incomplete.
 
 ## What I'd do next with more time (2–4 hours)
 

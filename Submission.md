@@ -39,7 +39,7 @@ To see the sharing flow: log in as Alice, create a document, click Share, toggle
 | Persistence (MongoDB) | Complete |
 | Auth (seeded users, JWT session) | Complete |
 | Rate limiting on login | Complete (in-memory, IP-based) |
-| Presence indicators (optional stretch) | Complete (polling-based avatar stack) |
+| Presence indicators (optional stretch) | Attempted, not functional — see Architecture.md |
 | Automated test | Complete (4 unit tests on authorization logic) |
 | Live deployment | Complete, verified on live URL |
 
