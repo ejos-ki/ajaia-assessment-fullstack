@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import Document, { IDocument } from "@/models/Document";
 import { getSession } from "@/lib/auth";
+import { checkDocumentAccess } from "@/lib/documentAccess";
 
 interface AuthorizationResult {
   document: mongoose.HydratedDocument<IDocument>;
@@ -33,17 +34,17 @@ async function authorizeDocumentAccess(
     return { errorMessage: "Document not found", statusCode: 404 };
   }
 
-  const isOwner = document.owner.toString() === currentUserId;
-  const isSharedCollaborator = document.sharedWith.some(
-    (collaboratorId: mongoose.Types.ObjectId) =>
-      collaboratorId.toString() === currentUserId
-  );
+  const access = checkDocumentAccess({
+    ownerId: document.owner.toString(),
+    sharedWithIds: document.sharedWith.map((id: mongoose.Types.ObjectId) => id.toString()),
+    requestingUserId: currentUserId,
+  });
 
-  if (!isOwner && !isSharedCollaborator) {
+  if (!access.canView) {
     return { errorMessage: "Forbidden", statusCode: 403 };
   }
 
-  return { document, isOwner };
+  return { document, isOwner: access.isOwner };
 }
 
 function isAuthorizationError(
