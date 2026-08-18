@@ -103,7 +103,7 @@ export default function EditorClient({
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3.5">
-          <div className="w-7 h-7 rounded-md bg-teal-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-7 h-7 rounded-md bg-teal-700 flex items-center justify-center shrink-0">
             <FileText size={15} className="text-white" />
           </div>
           <button
@@ -149,7 +149,7 @@ export default function EditorClient({
           <div className="bg-white border border-gray-200 rounded-t-xl px-3 py-2 flex items-center gap-0.5">
             <EditorToolbar editor={editor} />
           </div>
-          <div className="bg-white border border-gray-200 border-t-0 rounded-b-xl px-10 py-8 min-h-[400px]">
+          <div className="bg-white border border-gray-200 border-t-0 rounded-b-xl px-10 py-8 min-h-100">
             <EditorContent
               editor={editor}
               className="prose prose-sm max-w-none text-gray-800 focus:outline-none [&_.ProseMirror]:focus:outline-none"
