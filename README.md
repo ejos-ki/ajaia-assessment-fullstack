@@ -3,7 +3,7 @@
 A lightweight, Google-Docs-style collaborative document editor: rich text
 editing, file upload, and simple sharing between users.
 
-**Live deployment:** [add your Vercel URL here]
+**Live deployment:** https://ajaia-assessment-fullstack.vercel.app
 
 ---
 
