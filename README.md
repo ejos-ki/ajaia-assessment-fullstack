@@ -43,7 +43,7 @@ the owner).
 ### Setup
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ejos-ki/ajaia-assessment-fullstack
 cd ajaia-assessment-fullstack
 npm install
 ```
