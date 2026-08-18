@@ -1,54 +1,113 @@
-# Submission — Ajaia AI-Native Full Stack Developer Assessment
+# Ajaia Docs — AI-Native Full Stack Assessment
 
-**Candidate:** Jeo D. Latorre
-**Live product URL:** https://ajaia-assessment-fullstack.vercel.app
-**Repository:** https://github.com/ejos-ki/ajaia-assessment-fullstack
-**Walkthrough video:** [add unlisted YouTube/Loom URL]
+A lightweight, Google-Docs-style collaborative document editor: rich text
+editing, file upload, and simple sharing between users.
+
+**Live deployment:** [add your Vercel URL here]
 
 ---
 
 ## Test accounts
+
+No public signup — accounts are seeded. Use either:
 
 | Email | Password |
 |---|---|
 | `alice@example.com` | `password123` |
 | `bob@example.com` | `password123` |
 
----
-
-## What's included in this folder
-
-- `/source-code/` — full Next.js application source (or: link to GitHub
-  repo, if not duplicating the code into Drive)
-- `README.md` — setup and local run instructions, tech stack, test
-  credentials, feature summary
-- `ARCHITECTURE.md` — architecture note: what was prioritized, what was
-  deliberately left out, and why
-- `AI_WORKFLOW.md` — AI workflow note: tools used, what sped up the
-  build, what was changed or rejected from AI-generated output, how
-  correctness was verified
-- `submission.md` — this file
-- `walkthrough-video-link.txt` — plain text file containing the video URL
-- `notes.md` — full build log kept during development (optional/bonus:
-  raw, unedited process notes behind the polished docs above)
+To see the sharing flow: log in as Alice, create a document, click **Share**,
+toggle Bob on. Log out, log in as Bob — the document appears on his
+dashboard with edit access (no delete/share controls, since he's not
+the owner).
 
 ---
 
-## Feature status
+## Tech stack
 
-| Feature | Status |
-|---|---|
-| Rich text editing (bold, italic, underline, headings, lists) | Complete |
-| File upload (.txt/.md → new document) | Complete |
-| Sharing (owner shares with one or more collaborators) | Complete |
-| Persistence (MongoDB) | Complete |
-| Auth (seeded users, JWT session) | Complete |
-| Automated test | Complete (4 unit tests on authorization logic) |
-| Live deployment | Complete, verified on live URL (not just localhost) |
+- **Frontend/Backend:** Next.js 15 (App Router) — single codebase for UI and API routes
+- **Database:** MongoDB Atlas (free tier) via Mongoose
+- **Editor:** TipTap (rich text)
+- **Styling:** Tailwind CSS
+- **Auth:** Seeded users, JWT session in an httpOnly cookie
+- **Deployment:** Vercel
 
-## What's incomplete / next steps
+---
 
-See "What I'd do next with more time" in `ARCHITECTURE.md`. In short:
-rate limiting on login, a view-only sharing tier, and API-layer
-integration tests were deprioritized in favor of a complete, verified
-core product within the time limit.
+## Running locally
+
+### Prerequisites
+- Node.js 18+
+- A MongoDB connection string (Atlas free tier or local MongoDB)
+
+### Setup
+
+```bash
+git clone <your-repo-url>
+cd ajaia-assessment-fullstack
+npm install
+```
+
+Create a `.env.local` file in the project root:
+
+```
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=any_long_random_string
+```
+
+Generate a `JWT_SECRET` quickly with:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Seed the two test accounts:
+
+```bash
+npm run seed
+```
+
+Run the app:
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000` — you'll be redirected to `/login`.
+
+### Running tests
+
+```bash
+npm run test
+```
+
+---
+
+## Features
+
+- **Rich text editing** — bold, italic, underline, headings, bulleted and
+  numbered lists. Auto-saves ~1 second after you stop typing.
+- **File upload** — upload a `.txt` or `.md` file to create a new document
+  from its content. **Only `.txt` and `.md` are supported** (max 1MB);
+  other file types are rejected with a clear error message.
+- **Sharing** — the document owner can share with one or more other
+  seeded users, granting edit access. Only the owner can delete a
+  document or manage its sharing.
+- **Persistence** — documents and sharing state persist in MongoDB;
+  content and formatting survive a refresh.
+
+---
+
+## Known limitations
+
+See `notes.md` / the architecture note for the full list. Highlights:
+
+- No rate limiting on the login endpoint.
+- Sharing is single-tier (editor access only, no view-only role).
+- No real-time collaboration — last save wins if two users edit at once.
+- MongoDB Atlas network access is set to allow all IPs, since Vercel's
+  serverless functions don't have a static IP on the free tier. Access
+  still requires valid database credentials.
+
+## What I'd build next with more time
+
+See the architecture note for prioritization details.
